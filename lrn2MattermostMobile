@@ -1,0 +1,75 @@
+You will need to put the following your ~/.bashrc file in order to set Environmental variables which are used to locate Android directories.
+These are used when make-ing an application so that it can run temporarily on your phone.
+export ANDROID_HOME=/home/bobby/Android/Sdk
+export PATH=$ANDROID_HOME/platform-tools:$PATH
+export PATH=$ANDROID_HOME/tools:$PATH
+ANDROID_HOME is supposed to be the location of the extracted Android SDK, which you can download as a tar gz from Google's website.
+I found the link online and then wget'd the download while in the target directory.
+
+The command to unzip tar gz is:
+tar -xzvf <filename>
+
+You need node.Js for the app. To download, here:
+curl -sL https://deb.nodesource.com/setup_lts.x | bash -
+This just runs all the code automatically which is necessary to install Node.JS.  Piping it (the | operator) into bash causes it to auto-execute.
+
+You may also need:
+sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 lib32z1 libbz2-1.0:i386
+Don't remember what it does tho.
+
+You can clone the Mattermost-Mobile repository with just:
+git clone https://github.com/mattermost/mattermost-mobile.git
+
+To run react-native, you will need to do:
+sudo npm -g install react-native-cli
+React-Native is used to build the mobile application so it can be deployed on your phone.  npm IS the spelling of that command.  You get it from something else you have, or need to get.
+
+These commands will deploy a test app to a phone in developer mode:
+make start
+  starts react-native
+make run-android
+  deploys the app to the connected device. Can be emulator or phone in developer mode with USB Debugging on.
+make stop
+  stops react-native when done
+  
+Make sure to get PostgreSQL shit.
+
+The Mattermost Push Proxy Service needs to be run as a .service file not as a One-Time, but as a Simple type.  If the service is a One-Shot, then it will wait
+for the service to stop, which is why the service can get stuck in the "activating" state and it can hang while starting it manually.  If you make the type "Simple"
+then it won't hang and will operate correctly.
+
+I have a bunch of environmental variables which need to be set in order to compile the app properly (with the correct name and stuff).
+I stored this file in /home/bobby/AndroidHydraChatStuff.  The file is:
+mmEnvVariables.sh
+and you need to
+source mmEnvVariable.sh
+in order to set the environmental variables.
+Do the same with:
+AndroidBuildEnvVariables.sh.
+If one of them is missing, I was probably confused writing this.  Just source them if you can!
+
+
+psql -U mmuser mattermost will let you connect to the Mattermost database as mmuser, which is the PSQL user.  You can then perform PSQL Queries there.
+
+keytool -genkey -v -keystore my-release-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+was used to generate a key which lets the app be "signed" and therefore postable on the google play store (but fuck paying them).
+~/.gradke/gradle.properties needed to be updated with the keystore and password for the keystore from this file.
+
+To generate a build of the mattermost-mobile program (which can be given to other people's phones), just go into the mattermost-mobile folder and:
+make build-android
+Unfortunately, this has a lot of prerequisites.  One of them involves Fastlane.  To install Fastlane,
+sudo gem install fastlane -NV
+and then in the mattermost-mobile/fastlane/ directory:
+bundle install
+This will build fastlane so you can build the app.  It unfortunately was missing some header files, you can copy the commands here if you're missing them:
+sudo apt install ruby-dev
+sudo gem install unf_ext -v '0.0.7.7' --source 'https://rubygems.org/'
+sudo apt install libz-dev
+sudo gem install nokogiri -v '1.10.9' --source 'https://rubygems.org/'
+bundle install
+and run those in that order (they prerequisite each other).
+Then you can make build-android in the parent directory.
+
+After that, you can install the new .apk file you made with:
+adb install <name>.apk
+
